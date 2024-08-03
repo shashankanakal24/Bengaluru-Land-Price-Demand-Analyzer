@@ -1,0 +1,221 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bengaluru Land Price Prediction</title>
+    <style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+
+        *, *:after, *:before {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "DM Sans", sans-serif;
+            line-height: 1.5;
+            background-color: #f1f3fb;
+            padding: 0 2rem;
+        }
+        
+        img {
+            max-width: 100%;
+            display: block;
+        }
+        
+        /* iOS Reset */
+        input {
+            appearance: none;
+            border-radius: 0;
+        }
+        
+        .card {
+            margin: 2rem auto;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 425px;
+            background-color: #FFF;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px 0 rgba(153, 153, 153, 0.25);
+            padding: .75rem;
+        }
+        
+        .card-image {
+            border-radius: 8px;
+            overflow: hidden;
+            padding-bottom: 65%;
+            background-image: url('{% static 'app1/images/bengaluru1.png'%}');
+            background-repeat: no-repeat;
+            background-size: 150%;
+            background-position: 0 5%;
+            position: relative;
+        }
+        
+        .card-heading {
+            position: absolute;
+            left: 10%;
+            top: 15%;
+            right: 10%;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #735400;
+            line-height: 1.222;
+        }
+        
+        .card-heading small {
+            display: block;
+            font-size: .75em;
+            font-weight: 400;
+            margin-top: .25em;
+        }
+        
+        .card-form {
+            padding: 2rem 1rem 0;
+        }
+        
+        .input {
+            display: flex;
+            flex-direction: column-reverse;
+            position: relative;
+            padding-top: 1.5rem;
+        }
+        
+        .input + .input {
+            margin-top: 1.5rem;
+        }
+        
+        .input-label {
+            color: #8597a3;
+            position: absolute;
+            top: 1.5rem;
+            transition: .25s ease;
+        }
+        
+        .input-field {
+            border: 0;
+            z-index: 1;
+            background-color: transparent;
+            border-bottom: 2px solid #eee;
+            font: inherit;
+            font-size: 1.125rem;
+            padding: .25rem 0;
+        }
+        
+        .input-field:focus,
+        .input-field:valid {
+            outline: 0;                                            
+            border-bottom-color: #6658d3;
+        }
+        
+        .input-field:focus + .input-label,
+        .input-field:valid + .input-label {
+            color: #6658d3;
+            transform: translateY(-1.5rem);
+        }
+        
+        .action {
+            margin-top: 2rem;
+        }
+        
+        .action-button {
+            font: inherit;
+            font-size: 1.25rem;
+            padding: 1em;
+            width: 100%;
+            font-weight: 500;
+            background-color: #6658d3;
+            border-radius: 6px;
+            color: #FFF;
+            border: 0;
+        }
+        
+        .action-button:focus {
+            outline: 0;
+        }
+        
+        .card-info {
+            padding: 1rem 1rem;
+            text-align: center;
+            font-size: .875rem;
+            color: #8597a3;
+        }
+        
+        .card-info a {
+            display: block;
+            color: #6658d3;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-image">    
+                <h2 class="card-heading">
+                    Bengaluru
+                    <small>Land Prediction</small>
+                </h2>
+            </div>
+            <form class="card-form" id="prediction-form" method="post" action="/predict/" accept-charset="utf-8">
+                {% csrf_token %}
+                <div class="input">
+                    <select class="input-field" id="location" name="location" required>
+                        <option value="option4" disabled selected>Select your option</option>
+                        {% for location in locations %}
+                        <option value="{{location}}">{{location}}</option>
+                        {% endfor %} 
+                    </select>
+                    <label class="input-label">Select Location</label>
+                </div>
+                <div class="input">
+                    <input class="input-field" type="text" id="bhk" name="bhk" value=" "  required/>
+                    <label class="input-label">Enter BHK</label>
+                </div>
+                <div class="input">
+                    <input class="input-field" type="number" step="0.01" id="bath" name="bath" value=" "  required/> 
+                    <label class="input-label">Enter Number of Bathrooms</label>
+                </div>
+                <div class="input">
+                    <input class="input-field" type="number" step="0.01" id="totalSqft" name="total_sqft" value="   "  required/> 
+                    <label class="input-label">Enter Square Feet</label>
+                </div>
+                <div class="action">
+                    <button type="submit" class="action-button">Predict Price</button>
+                </div>
+            </form>
+            <div class="col-md-12 text-center">
+                <h3><span id="prediction"></span></h3>
+            </div>
+        </div>
+        <!--
+        <div class="card-info">
+            <p>By signing up you are agreeing to our <a href="#">Terms and Conditions</a></p>
+        </div>
+        -->
+    </div>
+    <script>
+        document.getElementById("prediction-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            sendData();
+        });
+
+        function sendData() {
+            var fd = new FormData(document.getElementById("prediction-form"));
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/predict/", true);
+            document.getElementById("prediction").innerHTML = "Wait Predicting Price!.......";
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == XMLHttpRequest.DONE) {
+                    var responseText = xhr.responseText;
+                    if (responseText < 0) {
+                        responseText = responseText.substring(1); // Remove minus sign
+                    }
+                    document.getElementById("prediction").innerHTML = "Prediction: ₹" + responseText;
+                }
+            };
+            xhr.send(fd);
+        }
+    </script>
+</body>
+</html>

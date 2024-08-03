@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Interest Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Interest by Location</h2>
+        
+        <!-- Dropdown menu for chart types -->
+        <label for="chartType">Select Chart Type:</label>
+        <select id="chartType">
+            <option value="bar">Bar</option>
+            <option value="line">Line</option>
+            <option value="pie">Pie</option>
+            <option value="doughnut">Doughnut</option>
+            <option value="radar">Radar</option>
+        </select>
+
+        <canvas id="locationChart" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+        // Function to create and update the chart
+        function createChart(type) {
+            var ctx = document.getElementById('locationChart').getContext('2d');
+            var locationChart = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: {{ locations|safe }},
+                    datasets: [{
+                        label: 'Demand in Particular Area',
+                        data: {{ counts|safe }},
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            return locationChart;
+        }
+
+        // Initialize chart with default type 'bar'
+        var currentChart = createChart('bar');
+
+        // Event listener for changing chart type
+        document.getElementById('chartType').addEventListener('change', function () {
+            var newType = this.value;
+            currentChart.destroy(); // Destroy current chart
+            currentChart = createChart(newType); // Create new chart with selected type
+        });
+    </script>
+</body>
+</html>
